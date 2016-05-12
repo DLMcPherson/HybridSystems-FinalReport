@@ -76,17 +76,42 @@ Noting that this variable is Gaussian distributed with variance $\Delta t$, we c
 x_{k+1} - x_k &\simeq (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k
 \\ \rightarrow &
 \\x_{k+1} &\simeq x_k + (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k
+\label{eq:DistochDyn}
 \end{align*}
 
-\subsection{}
-We will pick up our treatment by starting with the general stochastic reachability framework introduced in Abate et. al. % \cite{AbateStoch}
+\subsection{Expected Terminal Reward}
+We want to calculate:
+
+$$
+\mathbf{E}(r(x(T)))
+$$
+
+where $r(x)$ is the terminal payoff function.
+
+We will start our treatment by examining a previous framework for stochastic reachability presented in Abate et. al. % \cite{AbateStoch}
+Using Abate's work as a starting point is a convenient method for introducing established, foundational concepts.
+In the next section, we will expand outside the assumptions Abate made about payoff functions to leverage more powerful methods.
+For now, we will use his payoff function $r(x) = \mathbf{1_A}(x)$ where $A$ is the safe set, and $\mathbf{1_A}(x)$ is the indicator function.
+An indicator function for $A$ is $1$ inside the set $A$ and $0$ outside.
+
 Note that our system is a purely continuous state system (no discrete mode transitions) and is therefore not strictly a hybrid system.
-However, we can still use Abate's framework by considering our continuous system a type of hybrid system with only one mode.
+However, we can still use Abate's framework by considering our continuous system as a type of hybrid system with only one mode.
+
+Abate's equation () describes the update equation for the value function for backwards reachability.
+Initialize $V_0(x) = \mathbf{1_A}(x)$ and take
 
 \begin{align*}
-V_{k-1} & = \mathbf{1_A}(x) \mathrm{E}_{z \sim T} (V(z))
-\\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V( x + (f(x) + g(x) u + b) \Delta t) )
-\\ & = \mathbf{1_A}(x) \int_{-\infty}^{\infty} V( x + (f(x) + g(x) u + b) \Delta t) \frac{1}{\sigma \sqrt{2 \pi}} e^{-\frac{(x-\mu)^2}{2 \sigma^2}} db
+V_{k-1}(x) & = \mathbf{1_A}(x) \mathrm{E}_{z \sim P(x_k = z | x_{k-1}=x)} (V_k(z))
+\end{align*}
+
+The value function at discrete time $k-1$ is just the expected value at the next time step if $x \in A$ and is 0 if $x \in A^c$ since we've already failed to stay inside the safe set for all time.
+Here the probability of $x_k = z$ is governed by the discrete, stochastic dynamics described in Eq. \ref{eq:DistochDyn}
+Plugging in these discrete dynamics and expecting over $b_{k-1}$ instead yields:
+
+\begin{align*}
+V_{k-1}(x) & = \mathbf{1_A}(x) \mathrm{E}_{z \sim P(x_k = z | x_{k-1}=x)} (V_k(z))
+\\ & = \mathbf{1_A}(x) \mathrm{E}_{b_k\sim N} (V_k( x_k + (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k )
+\\ & = \mathbf{1_A}(x) \int_{-\infty}^{\infty} V_k( x + (f(x) + g(x) u + b) \Delta t)      \frac{1}{\sigma \sqrt{\Delta t} \sqrt{2 \pi}} e^{-\frac{x^2}{2 \sigma^2}} db
 \end{align*}
 
 \subsection{Differential Form}

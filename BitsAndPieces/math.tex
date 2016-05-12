@@ -1,0 +1,75 @@
+\documentclass[a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage{mathpazo}
+\setmainfont
+     [ BoldFont       = texgyrepagella-bold.otf ,
+       ItalicFont     = texgyrepagella-italic.otf ,
+       BoldItalicFont = texgyrepagella-bolditalic.otf ]
+     {texgyrepagella-regular.otf}
+\setmainfont{Gill Sans MT}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{physics}
+
+\title{Poster Math}
+
+\author{David McPherson}
+
+\date{\today}
+
+\begin{document}
+
+  \subsection{Abate}
+
+  \begin{align*}
+  \dot{x} = f(x) + g(x) u + b
+  \end{align*}
+
+  \begin{align*}
+  \dot{x}_1 &= x_2
+  \\
+  \dot{x}_2 &= k_t u^2 + g + b
+  \end{align*}
+
+  \begin{align*}
+  V_{k-1} & = \mathbf{1_A}(x) \mathrm{E}_{z \sim T} (V(z))
+  \\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V( x + (f(x) + g(x) u + b) \Delta t) )
+  \\ & = \mathbf{1_A}(x) \int_{-\infty}^{\infty} V( x + (f(x) + g(x) u + b) \Delta t) \frac{1}{\sigma \sqrt{2 \pi}} e^{-\frac{(x-\mu)^2}{2 \sigma^2}} db
+  \end{align*}
+
+  \subsection{Differential Form}
+
+  \begin{align*}
+  V_{k-1}(x) & = \mathbf{1_A}(x) \mathrm{E}_{z \sim T} (V_k(z))
+  \\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V_k( x + (f(x) + g(x) u + b) \Delta t) )
+  \\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V_k( x ) + \nabla V_k^T (f(x) + g(x) u + b) \Delta t )
+  \\ & = \mathbf{1_A}(x) V_k(x) + \mathrm{E}_{b\sim N} ( \nabla V_k^T (f(x) + g(x) u + b) \Delta t )
+  \\ & = \mathbf{1_A}(x) V_k(x) + \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b ) \Delta t
+  \\ \rightarrow
+  \\ \frac{V_{k-1} - V_k(x)}{\Delta t} &= \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b )
+  \end{align*}
+
+  \begin{align*}
+  \\ \Delta t \rightarrow 0
+  \\ -\frac{\delta V}{\delta t} &= \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b )
+  \\ -\frac{\delta V}{\delta t} &= \nabla V_k^T ( f(x) + g(x) u + \mu )
+  \end{align*}
+
+  \subsection{Mitchell Magic}
+
+  \begin{align*}
+  dx &= F(x,u) dt + \sigma(x) dB
+  \end{align*}
+  \begin{align*}
+  -\frac{\delta V}{\delta t} = \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b ) + 0.5 \texttt{trace} [\sigma(x) \sigma(x)^T \nabla^2_x V_k]
+  \end{align*}
+  \begin{align*}
+  dx &= (f(x) + g(x) u + \mu(x) ) dt + \sigma(x) dB
+  \end{align*}
+
+\end{document}
