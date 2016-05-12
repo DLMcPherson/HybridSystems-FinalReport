@@ -1,0 +1,122 @@
+\documentclass[a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage{mathpazo}
+\setmainfont
+     [ BoldFont       = texgyrepagella-bold.otf ,
+       ItalicFont     = texgyrepagella-italic.otf ,
+       BoldItalicFont = texgyrepagella-bolditalic.otf ]
+     {texgyrepagella-regular.otf}
+\setmainfont{Gill Sans MT}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{physics}
+
+\title{Derivations for EE291E Project Report}
+
+\author{David McPherson}
+
+\date{\today}
+
+\begin{document}
+
+\section{Derivations}
+\subsection{}
+We are investigating systems with control-affine deterministic dynamics with additive white Gaussian noise.
+The continuous dynamics are written as:
+
+\begin{align*}
+\dot{x} = f(x) + g(x) u + (\mu(x) + \sigma(x) w_t)
+\end{align*}
+
+where $w_t$ at time $t$ is sampled from a standard Gaussian distribution ($\mu = 0$ , $\sigma = 1$).
+Each random variable $w_t$ is independent and identically distributed throughout all time $t$.
+$w_t$ can be interpreted as a white Gaussian noise process over time.
+Note that our system dynamics are described by a stochastic differential equation, rather than the typical deterministic differential equation.
+
+For the sake of derivations, we will be analyzing a discrete approximation of this continuous system and then take the limit as $\Delta t$ goes to zero.
+For a more rigorous, strictly continuous treatment of stochastic differential equations with additive white noise see %Evans \cite{EvansSDE}.
+The mathematical treatment covered here is for intuition and understanding only.
+
+The discrete approximation to our system is:
+
+\begin{align*}
+x_{k+1} - x_k &= \int_{t = k \Delta t}^{(k+1) \Delta t} (f(x) + g(x) u + (\mu(x) + \sigma(x) w_t) )dt
+  \\  &= \int_{t = k \Delta t}^{(k+1) \Delta t} (f(x) + g(x) u + \mu(x)) dt + \int_{t = k \Delta t}^{(k+1) \Delta t} \sigma(x) w_t dt
+\\ &\simeq (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \int_{t = k \Delta t}^{(k+1) \Delta t} w_t dt
+\end{align*}
+
+Where we've separated out the drift due to the additive noise and $x_k$ denotes the state at time $t = k \Delta t$.
+We could have approximated the change due to the white noise in the same manner as we did the change due to the deterministic dynamics;
+namely, assume the noise is constant over the time interval $\Delta t$ and approximate as $\sigma(x_k) w_{k \Delta t} \Delta t$.
+
+However, a better approximation can be made that leverages random process theory.
+The integral $\int_{t = k \Delta t}^{(k+1) \Delta t} w_t dt$ is interpreted in the Ito sense.
+Taking the integral of i.i.d white noise over time is one method for generating the Wiener Process (which is responsible for Brownian motion, amongst other things).
+The value of the Wiener process $W_t$ at time $t$ is distributed according to another Gaussian with mean zero and variance equal to the length of time the integral is take over $\Delta t$.
+It is important to note that although the Wiener process is also Guassian distributed at each time point, it is not the same as the white noise it was generated from.
+The Wiener process is not i.i.d.
+That is, each value of $W_t = \int_{t_{start}}^{t} w_t dt$ is dependent on previous values of $W_s$ (with $s<t$).
+This dependence makes the trajectory of $W_t$ continuous, in contrast to the discontinuous, noisy plot of $w_t$.
+
+We take the Ito integral from start time $k \Delta t$ to $(k+1) \Delta t$, and get a new random variable for each $k$ interval that represents the drift in the state due to Brownian motion.
+Replacing the integral with this new random variable $W_k$:
+
+\begin{align*}
+x_{k+1} - x_k \simeq (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) W_k
+\end{align*}
+
+Noting that this variable is Gaussian distributed with variance $\Delta t$, we can replace this variable with a new standard normal distribution scaled by the standard deviation:
+
+\begin{align*}
+x_{k+1} - x_k &\simeq (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k
+\\ \rightarrow &
+\\x_{k+1} &\simeq x_k + (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k
+\end{align*}
+
+\subsection{}
+We will pick up our treatment by starting with the general stochastic reachability framework introduced in Abate et. al. % \cite{AbateStoch}
+Note that our system is a purely continuous state system (no discrete mode transitions) and is therefore not strictly a hybrid system.
+However, we can still use Abate's framework by considering our continuous system a type of hybrid system with only one mode.
+
+\begin{align*}
+V_{k-1} & = \mathbf{1_A}(x) \mathrm{E}_{z \sim T} (V(z))
+\\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V( x + (f(x) + g(x) u + b) \Delta t) )
+\\ & = \mathbf{1_A}(x) \int_{-\infty}^{\infty} V( x + (f(x) + g(x) u + b) \Delta t) \frac{1}{\sigma \sqrt{2 \pi}} e^{-\frac{(x-\mu)^2}{2 \sigma^2}} db
+\end{align*}
+
+\subsection{Differential Form}
+
+\begin{align*}
+V_{k-1}(x) & = \mathbf{1_A}(x) \mathrm{E}_{z \sim T} (V_k(z))
+\\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V_k( x + (f(x) + g(x) u + b) \Delta t) )
+\\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V_k( x ) + \nabla V_k^T (f(x) + g(x) u + b) \Delta t )
+\\ & = \mathbf{1_A}(x) V_k(x) + \mathrm{E}_{b\sim N} ( \nabla V_k^T (f(x) + g(x) u + b) \Delta t )
+\\ & = \mathbf{1_A}(x) V_k(x) + \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b ) \Delta t
+\\ \rightarrow
+\\ \frac{V_{k-1} - V_k(x)}{\Delta t} &= \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b )
+\end{align*}
+
+\begin{align*}
+\\ \Delta t \rightarrow 0
+\\ -\frac{\delta V}{\delta t} &= \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b )
+\\ -\frac{\delta V}{\delta t} &= \nabla V_k^T ( f(x) + g(x) u + \mu )
+\end{align*}
+
+\subsection{Mitchell Magic}
+
+\begin{align*}
+dx &= F(x,u) dt + \sigma(x) dB
+\end{align*}
+\begin{align*}
+-\frac{\delta V}{\delta t} = \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b ) + 0.5 \texttt{trace} [\sigma(x) \sigma(x)^T \nabla^2_x V_k]
+\end{align*}
+\begin{align*}
+dx &= (f(x) + g(x) u + \mu(x) ) dt + \sigma(x) dB
+\end{align*}
+
+\end{document}
