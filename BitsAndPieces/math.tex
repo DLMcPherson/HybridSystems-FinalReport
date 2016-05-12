@@ -16,7 +16,7 @@
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage{physics}
 
-\title{Poster Math}
+\title{Math Dump}
 
 \author{David McPherson}
 
@@ -24,6 +24,7 @@
 
 \begin{document}
 
+\section{Poster Math}
   \subsection{Abate}
 
   \begin{align*}
@@ -71,5 +72,18 @@
   \begin{align*}
   dx &= (f(x) + g(x) u + \mu(x) ) dt + \sigma(x) dB
   \end{align*}
+
+\section{Writeup Temp}
+
+\begin{align}
+V_{k-1}(x) & = \mathbf{1_A}(x) \mathrm{E}_{z \sim P(x_k = z | x_{k-1}=x)} (V_k(z))
+\\ & = \mathbf{1_A}(x) \mathrm{E}_{b_k\sim N} (V_k( x + (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k )
+\\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V_k( x ) + \nabla V_k^T ((f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k) )
+\\ & = \mathbf{1_A}(x) V_k(x) + \mathrm{E}_{b\sim N} ( \nabla V_k^T ( (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k)  )
+\\ & = \mathbf{1_A}(x) V_k(x) + \nabla V_k^T \mathrm{E}_{b\sim N}   ( (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k)
+\\ & = \mathbf{1_A}(x) V_k(x) + \nabla V_k^T \mathrm{E}_{b\sim N}   ( (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k)
+\\ \rightarrow
+\\ \frac{V_{k-1} - V_k(x)}{\Delta t} &= \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b )
+\end{align}
 
 \end{document}

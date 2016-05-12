@@ -1,4 +1,5 @@
 \documentclass[a4paper]{article}
+%\usepackage[letterpaper, margin=1.5in]{geometry}
 
 \usepackage{fontspec}
 \usepackage{mathpazo}
@@ -29,9 +30,9 @@
 We are investigating systems with control-affine deterministic dynamics with additive white Gaussian noise.
 The continuous dynamics are written as:
 
-\begin{align*}
+\begin{align}
 \dot{x} = f(x) + g(x) u + (\mu(x) + \sigma(x) w_t)
-\end{align*}
+\end{align}
 
 where $w_t$ at time $t$ is sampled from a standard Gaussian distribution ($\mu = 0$ , $\sigma = 1$).
 Each random variable $w_t$ is independent and identically distributed throughout all time $t$.
@@ -44,11 +45,11 @@ The mathematical treatment covered here is for intuition and understanding only.
 
 The discrete approximation to our system is:
 
-\begin{align*}
+\begin{align}
 x_{k+1} - x_k &= \int_{t = k \Delta t}^{(k+1) \Delta t} (f(x) + g(x) u + (\mu(x) + \sigma(x) w_t) )dt
   \\  &= \int_{t = k \Delta t}^{(k+1) \Delta t} (f(x) + g(x) u + \mu(x)) dt + \int_{t = k \Delta t}^{(k+1) \Delta t} \sigma(x) w_t dt
 \\ &\simeq (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \int_{t = k \Delta t}^{(k+1) \Delta t} w_t dt
-\end{align*}
+\end{align}
 
 Where we've separated out the drift due to the additive noise and $x_k$ denotes the state at time $t = k \Delta t$.
 We could have approximated the change due to the white noise in the same manner as we did the change due to the deterministic dynamics;
@@ -66,18 +67,23 @@ This dependence makes the trajectory of $W_t$ continuous, in contrast to the dis
 We take the Ito integral from start time $k \Delta t$ to $(k+1) \Delta t$, and get a new random variable for each $k$ interval that represents the drift in the state due to Brownian motion.
 Replacing the integral with this new random variable $W_k$:
 
-\begin{align*}
+\begin{align}
 x_{k+1} - x_k \simeq (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) W_k
-\end{align*}
+\end{align}
 
 Noting that this variable is Gaussian distributed with variance $\Delta t$, we can replace this variable with a new standard normal distribution scaled by the standard deviation:
 
-\begin{align*}
+\begin{align}
 x_{k+1} - x_k &\simeq (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k
-\\ \rightarrow &
-\\x_{k+1} &\simeq x_k + (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k
+\\ \rightarrow x_{k+1} &\simeq x_k + (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k = x_k + F(x_k,u_k,b_k,\Delta t)
 \label{eq:DistochDyn}
-\end{align*}
+\end{align}
+
+where:
+
+$$
+F(x_k,u_k,b_k,\Delta t) = (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k
+$$
 
 \subsection{Expected Terminal Reward}
 We want to calculate:
@@ -100,48 +106,59 @@ However, we can still use Abate's framework by considering our continuous system
 Abate's equation () describes the update equation for the value function for backwards reachability.
 Initialize $V_0(x) = \mathbf{1_A}(x)$ and take
 
-\begin{align*}
+\begin{align}
 V_{k-1}(x) & = \mathbf{1_A}(x) \mathrm{E}_{z \sim P(x_k = z | x_{k-1}=x)} (V_k(z))
-\end{align*}
+\end{align}
 
 The value function at discrete time $k-1$ is just the expected value at the next time step if $x \in A$ and is 0 if $x \in A^c$ since we've already failed to stay inside the safe set for all time.
-Here the probability of $x_k = z$ is governed by the discrete, stochastic dynamics described in Eq. \ref{eq:DistochDyn}
+Here the probability of $x_k = z$ is governed by the discrete, stochastic dynamics described in Eq. \ref{eq:DistochDyn}.
 Plugging in these discrete dynamics and expecting over $b_{k-1}$ instead yields:
 
-\begin{align*}
+\begin{align}
 V_{k-1}(x) & = \mathbf{1_A}(x) \mathrm{E}_{z \sim P(x_k = z | x_{k-1}=x)} (V_k(z))
-\\ & = \mathbf{1_A}(x) \mathrm{E}_{b_k\sim N} (V_k( x_k + (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k )
-\\ & = \mathbf{1_A}(x) \int_{-\infty}^{\infty} V_k( x + (f(x) + g(x) u + b) \Delta t)      \frac{1}{\sigma \sqrt{\Delta t} \sqrt{2 \pi}} e^{-\frac{x^2}{2 \sigma^2}} db
-\end{align*}
+\\ & = \mathbf{1_A}(x) \mathrm{E}_{b_k\sim N} (V_k( x + (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k )
+\\ & = \mathbf{1_A}(x) \int_{-\infty}^{\infty} V_k( x + (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k )      \frac{1}{\sigma \sqrt{\Delta t} \sqrt{2 \pi}} e^{-\frac{x^2}{2 \Delta t \sigma^2}} db
+\label{eq:AbateBrute}
+\end{align}
+
+In his development, Abate proves that this returns the expectaction of never leaving the safe set.
+Actually using formula \ref{eq:AbateBrute} to calculate the expected safety function, would be rather arduous.
+Formula \ref{eq:AbateBrute} with a one-dimensional state space and noise vector corresponds to a convolution between the value function and the Gaussian PDF.
+
+Abate also proves that the optimal control policy for maximizing the safety expectation is a time-pointwise maximization for each time step.
+Although his proof is more rigorous, the time-pointwise maximization can also be (more simply) derived using the Principle of Optimality.
 
 \subsection{Differential Form}
+To ameliorate the processing burden, we will use tricks learned from deriving deterministic reachability in class.
+Namely, we will cast the value function update into a partial differential equation, whereupon we can leverage previous advances in viscosity solution solvers to obtain the stochastically safe sets.
 
-\begin{align*}
-V_{k-1}(x) & = \mathbf{1_A}(x) \mathrm{E}_{z \sim T} (V_k(z))
-\\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V_k( x + (f(x) + g(x) u + b) \Delta t) )
-\\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V_k( x ) + \nabla V_k^T (f(x) + g(x) u + b) \Delta t )
-\\ & = \mathbf{1_A}(x) V_k(x) + \mathrm{E}_{b\sim N} ( \nabla V_k^T (f(x) + g(x) u + b) \Delta t )
-\\ & = \mathbf{1_A}(x) V_k(x) + \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b ) \Delta t
+\begin{align}
+V_{k-1}(x) & = \mathbf{1_A}(x) \mathrm{E}_{z \sim P(x_k = z | x_{k-1}=x)} (V_k(z))
+\\ & = \mathbf{1_A}(x) \mathrm{E}_{b_k\sim N} (V_k( x + (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k )
+\\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V_k( x ) + \nabla V_k^T ((f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k) )
+\\ & = \mathbf{1_A}(x) V_k(x) + \mathrm{E}_{b\sim N} ( \nabla V_k^T ( (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k)  )
+\\ & = \mathbf{1_A}(x) V_k(x) + \nabla V_k^T \mathrm{E}_{b\sim N}   ( (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k)
+\\ & = \mathbf{1_A}(x) V_k(x) + \nabla V_k^T \mathrm{E}_{b\sim N}   ( (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k)
 \\ \rightarrow
 \\ \frac{V_{k-1} - V_k(x)}{\Delta t} &= \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b )
-\end{align*}
+\end{align}
 
-\begin{align*}
+\begin{align}
 \\ \Delta t \rightarrow 0
 \\ -\frac{\delta V}{\delta t} &= \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b )
 \\ -\frac{\delta V}{\delta t} &= \nabla V_k^T ( f(x) + g(x) u + \mu )
-\end{align*}
+\end{align}
 
 \subsection{Mitchell Magic}
 
-\begin{align*}
+\begin{align}
 dx &= F(x,u) dt + \sigma(x) dB
-\end{align*}
-\begin{align*}
+\end{align}
+\begin{align}
 -\frac{\delta V}{\delta t} = \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b ) + 0.5 \texttt{trace} [\sigma(x) \sigma(x)^T \nabla^2_x V_k]
-\end{align*}
-\begin{align*}
+\end{align}
+\begin{align}
 dx &= (f(x) + g(x) u + \mu(x) ) dt + \sigma(x) dB
-\end{align*}
+\end{align}
 
 \end{document}
