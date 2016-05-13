@@ -1,0 +1,54 @@
+\documentclass[a4paper]{article}
+%\usepackage[letterpaper, margin=1.5in]{geometry}
+
+\usepackage{fontspec}
+\usepackage{mathpazo}
+\setmainfont
+     [ BoldFont       = texgyrepagella-bold.otf ,
+       ItalicFont     = texgyrepagella-italic.otf ,
+       BoldItalicFont = texgyrepagella-bolditalic.otf ]
+     {texgyrepagella-regular.otf}
+\setmainfont{Gill Sans MT}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{physics}
+
+\title{Previous Work}
+
+\author{David McPherson}
+
+\date{\today}
+
+\begin{document}
+
+\cite{KeneJaime}
+
+\section{Previous Work}
+Just as deterministic reachability is intertwined with optimal control, stochastic reachability is intertwined with stochastic optimal control.
+Work like Bertsekas and Shreve \cite{Bertsekas} lays a solid foundation for analyzing stochastic optimal control with discrete time.
+Abate et. al \cite{AbateStoch} picks up these tools for stochastic optimal control and applies it to the hybrid reachability control problem.
+We will carry the mantle of this research a little further by starting to peer at the particularly useful problem described in our Motivation.
+
+To do so, we must analyze continuous time evolution of a stochastic system with Gaussian noise.
+Here we tap into the venerable heritage of probability theory and stochastic calculus.
+The study of stochastic differential systems is immense.
+Here we lean heavily on the insights afforded in Evans' textbook on SDEs\cite{EvansSDE}.
+
+All this analysis is towards the goal of molding this problem into a form acceptable to the powerful Level Set Toolbox created by Mitchell \cite{MitchellToolbox}.
+By casting our problem as a Hamilton-Jacobi partial differential equation, we can leverage advances in solving these uniquely useful equations.
+It is worth noting that Mitchell \cite{MitchellToolbox} actually contains an example of a stochastic differential system with white Gaussian noise, just as we're investigating.
+This work expounds upon the formulation Mitchell obtained.
+Where Mitchell simply pointed to Evans \cite{EvansSDE} and left out the derivation for his formula, we provide a rough derivation.
+We also apply this formulation to reachability, which Mitchell did not.
+
+  % =========== References =========== %
+\section{Bibliography}
+
+  \bibliographystyle{plain}
+  \bibliography{primary_cite}
+
+\end{document}

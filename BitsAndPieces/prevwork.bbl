@@ -1,0 +1,35 @@
+\begin{thebibliography}{1}
+
+\bibitem{AbateStoch}
+Alessandro Abate, Maria Prandini, John Lygeros, and Shankar Sastry.
+\newblock Probabilistic reachability and safety for controlled discrete time
+  stochastic hybrid systems.
+\newblock {\em Automatica}, 44(11):2724--2734, 2008.
+
+\bibitem{KeneJaime}
+Anayo~K Akametalu, Jaime~F Fisac, Jeremy~H Gillula, Shahab Kaynama, Melaine~N
+  Zeilinger, and Claire~J Tomlin.
+\newblock Reachability-based safe learning with gaussian processes.
+\newblock In {\em Decision and Control (CDC), 2014 IEEE 53rd Annual Conference
+  on}, pages 1424--1431. IEEE, 2014.
+
+\bibitem{Bertsekas}
+DP~Bertsekas and SE~Shreve.
+\newblock Stochastic optimal control: The discrete-time case (athena
+  scientific, belmont, ma).
+\newblock 1996.
+
+\bibitem{EvansSDE}
+Lawrence~C Evans.
+\newblock {\em An introduction to stochastic differential equations},
+  volume~82.
+\newblock American Mathematical Soc., 2012.
+
+\bibitem{MitchellToolbox}
+Ian~M Mitchell and Jeremy~A Templeton.
+\newblock A toolbox of hamilton-jacobi solvers for analysis of nondeterministic
+  continuous and hybrid systems.
+\newblock In {\em Hybrid systems: computation and control}, pages 480--494.
+  Springer, 2005.
+
+\end{thebibliography}

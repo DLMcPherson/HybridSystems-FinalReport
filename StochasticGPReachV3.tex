@@ -18,7 +18,7 @@
 
 %\DeclareMathOperator{\Tr}{Tr}
 
-\title{Reachability for Stochastic Systems with Gaussian Process Disturbances}
+\title{Stochastic Reachability with Gaussian Noise}
 
 \author{David McPherson}
 
@@ -27,107 +27,41 @@
 \begin{document}
 \maketitle
 
-\section{Motivation and Intellectual Merit}
-Our proposal is to specialize the stochastic reachability problem to when the continuous dynamics are deterministic control affine with an additive Gaussian process disturbance.
-We will view reachability as a stochastic optimal control problem trying to maximize the expected value of staying within a safe set $A$ and use dynamic programming to solve.
-By narrowing our problem focus, we hope to simplify the dynamic programming approach discussed in Bertsekas [1] and produce a more tractable algorithm.
+\section{Introduction}
+Reachability has become a valuable tool for analyzing the safety of complex dynamic systems.
+Classic reachability formulates the disturbance as playing a dynamic game, wherein the disturbance aggressively chooses the worst possible choice to push the control to its limits.
+By working in this worst-case scenario, we can effectively certify safety.
+However, such worst case estimates for safety are often too conservative.
+The agressive disturbance always fills the void for some uncertain parameter that we at least have bounds on.
+However, in many cases we have more than just bounds on the disturbance.
+Oftentimes we have some statistical information on the distribution of the disturbance.
+Rather than throw away this distributional information, it would be ideal if we could incorporate it.
 
-\subsection{Problem Definition}
-We investigate the control-affine problem with a Gaussian process disturbance dependent on the state. These dynamics are of the form:
+This is the idea behind stochastic reachability.
+Instead of providing 100\% guarantees that some region is safe, it provides likelihoods of that inital state staying safe.
+It effectively mixes in the doubt inherent in the disturbance's uncertainty, without making assumptions about the worst-case.
 
-\begin{equation}
-\dot{x} = f(x,u) = h(x) + g(x) u + D(x)
-\end{equation}
+The downside is that stochastic analysis is complex.
+Good computational methods for analyzing the differential games for classic reachability exist.
+However, the computational methods needed for analyzing stochastic differential equations with disturbances drawn from arbitrary distributions just aren't there yet.
 
-where:
+This work is an introduction to the world of stochastic reachability, and allowed me to begin sampling the plethora of topics required to make stochastic analysis work.
+Instead of analyze reachability for arbitrary probabilistic disturbances, I focus on disturbances that are normally distributed.
+Although this is a very narrow subset of all stochastic reachability problems, I feel it is the most interesting narrow subset.
 
-\begin{equation}
-D(x) \sim GP(m(x),K(x,x'))
-\end{equation}
+\section{Problem Statement and Motivation}
+Control affine form
 
-with mean function $m(x)$ and variance kernel $K(x,x')$.
+Jaime and Kene
 
-\subsection{Potential Applications}
-\subsubsection{Regression Models}
-In doing so we will obtain an efficient algorithm for a subset of problems that turns up often in applications.
-Gaussian processes are a powerful regression tool often used to model probabilistic or unknown processes.
-Akametalu, Fisac, et. al [2] used Gaussian processes to estimate the deterministic state-dependent disturbance.
-They then set the disturbance at a point $x$ to be drawn from the set $[\mu(x)-2\sigma(x) , \mu(x)+2\sigma(x)]$ which is true 95.5\% of the time.
+\section{Previous Work}
 
-However, this funnels the rich fullness of the probability distribution into a mere range of numbers.
-This throws away layers of valuable information about how likely the disturbance is to attain certain values.
-In essence, reducing it to just a set looks at mostly the GP's mean to say what values the disturbance can attain.
-Whereas, using the full distribution uses the mean and the variance too.
-Here we seek to use the Gaussian process fit as the actual disturbance model in a stochastic system rather than a non-deterministic one.
-Although the disturbance may actually be deterministic, using the probability distribution in our analysis captures information about how certain we are of our estimate of the deterministic disturbance.
-\subsubsection{*Some* Noisily Rational Agents}
-This Gaussian-process Reachability analysis applies to other problems as well.
-A noisily rational agent penalizing high velocities will transition according to a Gaussian process.
-This could be valuable when performing decentralized collision avoidance between two planes in flight for example.
-\subsection{Future Use}
-Finally, this work will contribute a valuable alternative to non-deterministic reachability analysis common in the Hybrid Systems Lab at UC Berkeley. Gaussian processes are the most common modeling technique for stochastic systems, and so if a researcher wanted to explore the space of stochastic reachability further, this work forms a solid stepping stone from which to leap off of.
+\section{Derivations}
 
-\section{New Stuff}
-\subsection{Abate}
-
-\begin{align*}
-\dot{x} = f(x) + g(x) u + b
-\end{align*}
-
-\begin{align*}
-\dot{x}_1 &= x_2
-\\
-\dot{x}_2 &= k_t u^2 + g + b
-\end{align*}
-
-\begin{align*}
-V_{k-1} & = \mathbf{1_A}(x) \mathrm{E}_{z \sim T} (V(z))
-\\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V( x + (f(x) + g(x) u + b) \Delta t) )
-\\ & = \mathbf{1_A}(x) \int_{-\infty}^{\infty} V( x + (f(x) + g(x) u + b) \Delta t) \frac{1}{\sigma \sqrt{2 \pi}} e^{-\frac{(x-\mu)^2}{2 \sigma^2}} db
-\end{align*}
-
-\subsection{Differential Form}
-
-\begin{align*}
-V_{k-1}(x) & = \mathbf{1_A}(x) \mathrm{E}_{z \sim T} (V_k(z))
-\\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V_k( x + (f(x) + g(x) u + b) \Delta t) )
-\\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V_k( x ) + \nabla V_k^T (f(x) + g(x) u + b) \Delta t )
-\\ & = \mathbf{1_A}(x) V_k(x) + \mathrm{E}_{b\sim N} ( \nabla V_k^T (f(x) + g(x) u + b) \Delta t )
-\\ & = \mathbf{1_A}(x) V_k(x) + \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b ) \Delta t
-\\ \rightarrow
-\\ \frac{V_{k-1} - V_k(x)}{\Delta t} &= \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b )
-\end{align*}
-
-\begin{align*}
-\\ \Delta t \rightarrow 0
-\\ -\frac{\delta V}{\delta t} &= \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b )
-\\ -\frac{\delta V}{\delta t} &= \nabla V_k^T ( f(x) + g(x) u + \mu )
-\end{align*}
-
-\subsection{Mitchell Magic}
-
-\begin{align*}
-dx &= F(x,u) dt + \sigma(x) dB
-\end{align*}
-\begin{align*}
--\frac{\delta V}{\delta t} = \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b ) + 0.5 \texttt{trace} [\sigma(x) \sigma(x)^T \nabla^2_x V_k]
-\end{align*}
-\begin{align*}
-dx &= (f(x) + g(x) u + \mu(x) ) dt + \sigma(x) dB
-\end{align*}
-
+\section{Applications}
+\subsection{Quadrotor Safety with Learned Disturbances}
 
 \section{Conclusion}
-We will focus the reachability analysis of stochastic systems to those with additive Gaussian Process (GP) disturbances, thereby simplifying the dynamic programming problem.
-Gaussian processes are a broadly used model due to its simplicity and a well-studied regression technique.
-Due to this wide use, our stochastic system analysis will apply to a number of interesting cases, most notably for better leveraging information from online disturbance learning.
-It'll be awesome.
 
-\section{Bibliography}
-\begin{enumerate}
-\item Bertsekas, D. P., \& Shreve, S. E. (1996). Stochastic Optimal Control: The Discrete-Time Case (Athena Scientific, Belmont, MA).
-
-\item Akametalu, A. K., Fisac, J. F., Gillula, J. H., Kaynama, S., Zeilinger, M. N., \& Tomlin, C. J. (2014, December). Reachability-based safe learning with gaussian processes. In Decision and Control (CDC), 2014 IEEE 53rd Annual Conference on (pp. 1424-1431). IEEE.
-\end{enumerate}
 
 \end{document}
