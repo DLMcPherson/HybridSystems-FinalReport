@@ -1,0 +1,39 @@
+\documentclass[a4paper]{article}
+%\usepackage[letterpaper, margin=1.5in]{geometry}
+
+\usepackage{fontspec}
+\usepackage{mathpazo}
+\setmainfont
+     [ BoldFont       = texgyrepagella-bold.otf ,
+       ItalicFont     = texgyrepagella-italic.otf ,
+       BoldItalicFont = texgyrepagella-bolditalic.otf ]
+     {texgyrepagella-regular.otf}
+\setmainfont{Gill Sans MT}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{physics}
+
+\title{Previous Work}
+
+\author{David McPherson}
+
+\date{\today}
+
+\begin{document}
+
+\section{Previous Work}
+Just as deterministic reachability is intertwined with optimal control, stochastic reachability is intertwined with stochastic optimal control.
+Work like \cite{Bertsekas} lays a solid foundation for analyzing stochastic optimal control with discrete time.
+\cite{AbateStoch} 
+
+  % =========== References =========== %
+\section{Bibliography}
+
+  \bibliographystyle{plain}
+  \bibliography{primary_cite}
+
+\end{document}

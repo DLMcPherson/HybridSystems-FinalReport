@@ -75,14 +75,15 @@ Noting that this variable is Gaussian distributed with variance $\Delta t$, we c
 
 \begin{align}
 x_{k+1} - x_k &\simeq (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k
-\\ \rightarrow x_{k+1} &\simeq x_k + (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k = x_k + F(x_k,u_k,b_k,\Delta t)
+\\ \rightarrow x_{k+1} &\simeq x_k + (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k
 \label{eq:DistochDyn}
+\\= x_k + h(x_k,u_k) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k
 \end{align}
 
 where:
 
 $$
-F(x_k,u_k,b_k,\Delta t) = (f(x_k) + g(x_k) u_k + \mu(x_k)) \Delta t + \sigma(x_k) \sqrt{\Delta t} b_k
+h(x_k,u_k) = f(x_k) + g(x_k) u_k + \mu(x_k)
 $$
 
 \subsection{Expected Terminal Reward}
@@ -116,8 +117,8 @@ Plugging in these discrete dynamics and expecting over $b_{k-1}$ instead yields:
 
 \begin{align}
 V_{k-1}(x) & = \mathbf{1_A}(x) \mathrm{E}_{z \sim P(x_k = z | x_{k-1}=x)} (V_k(z))
-\\ & = \mathbf{1_A}(x) \mathrm{E}_{b_k\sim N} (V_k( x + (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k )
-\\ & = \mathbf{1_A}(x) \int_{-\infty}^{\infty} V_k( x + (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k )      \frac{1}{\sigma \sqrt{\Delta t} \sqrt{2 \pi}} e^{-\frac{x^2}{2 \Delta t \sigma^2}} db
+\\ & = \mathbf{1_A}(x) \mathrm{E}_{b_k\sim N} (V_k( x + (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) b_k \sqrt{\Delta t} )
+\\ & = \mathbf{1_A}(x) \int_{-\infty}^{\infty} V_k( x + (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) b_k \sqrt{\Delta t} )      \frac{1}{\sigma \sqrt{2 \pi \Delta t}} e^{-\frac{x^2}{2 \sigma^2 \Delta t}} db
 \label{eq:AbateBrute}
 \end{align}
 
@@ -131,34 +132,59 @@ Although his proof is more rigorous, the time-pointwise maximization can also be
 \subsection{Differential Form}
 To ameliorate the processing burden, we will use tricks learned from deriving deterministic reachability in class.
 Namely, we will cast the value function update into a partial differential equation, whereupon we can leverage previous advances in viscosity solution solvers to obtain the stochastically safe sets.
+Let $H$ denote the Hessian of $V_k$.
 
-\begin{align}
+\begin{align*}
 V_{k-1}(x) & = \mathbf{1_A}(x) \mathrm{E}_{z \sim P(x_k = z | x_{k-1}=x)} (V_k(z))
-\\ & = \mathbf{1_A}(x) \mathrm{E}_{b_k\sim N} (V_k( x + (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k )
-\\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V_k( x ) + \nabla V_k^T ((f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k) )
-\\ & = \mathbf{1_A}(x) V_k(x) + \mathrm{E}_{b\sim N} ( \nabla V_k^T ( (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k)  )
-\\ & = \mathbf{1_A}(x) V_k(x) + \nabla V_k^T \mathrm{E}_{b\sim N}   ( (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k)
-\\ & = \mathbf{1_A}(x) V_k(x) + \nabla V_k^T \mathrm{E}_{b\sim N}   ( (f(x) + g(x) u_k + \mu(x)) \Delta t + \sigma(x) \sqrt{\Delta t} b_k)
-\\ \rightarrow
-\\ \frac{V_{k-1} - V_k(x)}{\Delta t} &= \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b )
-\end{align}
+\\ & = \mathbf{1_A}(x) \mathrm{E}_{b_k\sim N} (V_k( x + h(x,u_k) \Delta t + \sigma(x) \sqrt{\Delta t} b_k )
+\\ & = \mathbf{1_A}(x) \mathrm{E}_{b\sim N} (V_k( x ) + \nabla V_k^T (h(x,u_k) \Delta t + \sigma(x) \sqrt{\Delta t} b_k)
+\\ & + (h(x,u_k) \Delta t + \sigma(x) \sqrt{\Delta t} b_k)^T H (h(x,u_k) \Delta t + \sigma(x) \sqrt{\Delta t} b_k)    )
+\\ & = \mathbf{1_A}(x) [ V_k( x ) + \nabla V_k^T h(x,u_k) \Delta t + \nabla V_k^T \sigma(x) \sqrt{\Delta t} \mathrm{E}_{b\sim N}(b_k)
+\\ & + \mathrm{E}_{b\sim N} (h(x,u_k) \Delta t + \sigma(x) \sqrt{\Delta t} b_k)^T H (h(x,u_k) \Delta t + \sigma(x) \sqrt{\Delta t} b_k) ]
+\\ & = \mathbf{1_A}(x) [ V_k( x ) + \nabla V_k^T h(x,u_k) \Delta t
+\\ & + \Delta t^2 h^t H h + \Delta t^{3/2} \mathrm{E}_{b\sim N} [ h^T H \sigma b_k + \sigma^T H h b_k]
+\\ & + \sigma^T H \sigma \mathrm{E}_{b\sim N} [b_k^2] \Delta t ]
+\end{align*}
+
+Multiplying by the indicator function $\mathbf{1_A}(x)$ on each of these terms, just says that we should only update points inside the safe set.
+Points outside the safe set, should never change from zero.
+This behavior can also be attained by ensuring that the updates are always non-positive by taking the max with zero.
+Making this substitution allows us to focus on the term previously multiplying the indicator function:
 
 \begin{align}
-\\ \Delta t \rightarrow 0
-\\ -\frac{\delta V}{\delta t} &= \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b )
-\\ -\frac{\delta V}{\delta t} &= \nabla V_k^T ( f(x) + g(x) u + \mu )
+V_{k-1}(x) & = V_k( x ) + \nabla V_k^T h(x,u_k) \Delta t
+\\ & + \Delta t^2 h^t H h + \Delta t^{3/2} \mathrm{E}_{b\sim N} [ h^T H \sigma b_k + \sigma^T H h b_k]
+\\ & + \sigma^T H \sigma \cdot 1 \Delta t
 \end{align}
 
-\subsection{Mitchell Magic}
+Subtract the $V_k$ from both sides and divide by $\Delta t$ to obtain:
 
 \begin{align}
-dx &= F(x,u) dt + \sigma(x) dB
+\frac{V_{k-1}(x) - V_k(x)}{\Delta t} & = \nabla V_k^T h(x,u_k)
+\\ & + \Delta t h^t H h + \Delta t^{1/2} \mathrm{E}_{b\sim N} [ h^T H \sigma b_k + \sigma^T H h b_k]
+\\ & + \sigma^T H \sigma
 \end{align}
+
+Taking the limit as $\Delta t \rightarrow 0$ produces the differential form and collapses the discrete approximation back into the true continuous dynamics with:
+
 \begin{align}
--\frac{\delta V}{\delta t} = \nabla V_k^T \mathrm{E}_{b\sim N} ( f(x) + g(x) u + b ) + 0.5 \texttt{trace} [\sigma(x) \sigma(x)^T \nabla^2_x V_k]
+-\frac{\delta V(x)}{\delta t} &= \nabla V_k^T h(x,u(t)) + \sigma^T H \sigma
+\\ &= \nabla V^T (f(x) + g(x) u(t)) + \nabla V^T \mu(x) + \sigma^T H \sigma
+\label{eq:beautiful}
 \end{align}
-\begin{align}
-dx &= (f(x) + g(x) u + \mu(x) ) dt + \sigma(x) dB
-\end{align}
+
+This update has three components.
+The first term depends solely on the deterministic control-affine dynamics and is identical to the Hamiltonian for a deterministic system.
+The second term is the change in $V$ due to where the noise will move on average.
+The third term is the most interesting.
+It is second-order with space like in the heat equation.
+It represents a diffusion of expected value over time due to random variations in the disturbance.
+Perhaps most intriguingly is the connection between this Heat-equation-esque term and our underlying disturbance.
+Our disturbance is a Brownian motion which is also used to predict how heated particles will move.
+
+To maximize our expected value, we should choose $u(t)$ at each time step to maximize $\frac{\delta V(x)}{\delta t}$.
+Since the first (deterministic) term is the only term dependent on $u$ and it is isolated from the stochastic terms, maximizing $u$ is accomplished identically to how it would be done in the deterministic case.
+
+Eq. \ref{eq:beautiful} is of a form compatible with Ian Mitchell's level set toolbox for solving Hamilton Jacobi partial differential equations.
 
 \end{document}
